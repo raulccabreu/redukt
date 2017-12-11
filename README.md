@@ -1,4 +1,4 @@
-# redukt
+# redukt [![Build Status](https://travis-ci.org/raulccabreu/redukt.svg?branch=master)](https://travis-ci.org/raulccabreu/redukt)
 Redux architecture pattern to Android writed in Kotlin
 
 #### MIT License
