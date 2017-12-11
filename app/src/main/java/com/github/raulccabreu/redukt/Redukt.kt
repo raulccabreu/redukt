@@ -9,7 +9,7 @@ class Redukt<T: Any>(state: T) {
     val reducers = mutableSetOf<Reducer<T>>()
 
     fun dispatch(action: Action<*>) {
-        // Naive non async approach to reduce the state
+        // Naive non async dispatcher approach
         var tempState = state
         reducers.forEach { tempState = it.reduce(tempState, action) }
         state = tempState
