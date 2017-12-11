@@ -1,0 +1,18 @@
+language: android
+
+env:
+  global:
+    - GRADLE_OPTS=-Xmx512m
+
+android:
+  components:
+    - tools
+    - build-tools-26.0.2 # TODO: build gradle without build-tools
+    - android-26
+    - extra-android-m2repository
+
+jdk:
+  - oraclejdk8
+
+script:
+  - ./gradlew assemble test --stacktrace
