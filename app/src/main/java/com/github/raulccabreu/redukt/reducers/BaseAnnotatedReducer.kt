@@ -1,7 +1,7 @@
 package com.github.raulccabreu.redukt.reducers
 
 import com.github.raulccabreu.redukt.actions.Action
-import com.github.raulccabreu.redukt.actions.ReducerAction
+import com.github.raulccabreu.redukt.actions.Reduce
 import java.lang.reflect.Method
 import java.security.InvalidParameterException
 import java.util.concurrent.ConcurrentHashMap
@@ -13,9 +13,9 @@ abstract class BaseAnnotatedReducer<T> : Reducer<T> {
 
     init {
         javaClass.methods
-                .filter { it.isAnnotationPresent(ReducerAction::class.java) }
+                .filter { it.isAnnotationPresent(Reduce::class.java) }
                 .forEach {
-                    val annotation = it.getAnnotation(ReducerAction::class.java) as ReducerAction
+                    val annotation = it.getAnnotation(Reduce::class.java) as Reduce
 
                     if (annotation.action.isBlank())
                         throw IllegalArgumentException("ReducerAction action cannot be empty")

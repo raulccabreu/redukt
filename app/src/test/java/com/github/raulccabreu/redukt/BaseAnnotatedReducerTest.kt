@@ -1,7 +1,7 @@
 package com.github.raulccabreu.redukt
 
 import com.github.raulccabreu.redukt.actions.Action
-import com.github.raulccabreu.redukt.actions.ReducerAction
+import com.github.raulccabreu.redukt.actions.Reduce
 import com.github.raulccabreu.redukt.reducers.BaseAnnotatedReducer
 import junit.framework.Assert
 import org.junit.Test
@@ -119,40 +119,40 @@ class BaseAnnotatedReducerTest {
 
 
     inner class ValidReducer : BaseAnnotatedReducer<String>() {
-        @ReducerAction("valid")
+        @Reduce("valid")
         fun testBaseReducer(state: String, payload: String): String {
             return payload
         }
     }
 
     inner class UpperCaseReducer : BaseAnnotatedReducer<String>() {
-        @ReducerAction("valid")
+        @Reduce("valid")
         fun testBaseReducer(state: String, payload: String): String {
             return payload.toUpperCase()
         }
     }
 
     inner class InvalidArgumentReducer : BaseAnnotatedReducer<String>() {
-        @ReducerAction("")
+        @Reduce("")
         fun testBaseReducer(state: String, payload: String): String {
             return payload
         }
     }
 
     inner class InvalidParameterReducer : BaseAnnotatedReducer<String>() {
-        @ReducerAction("invalid")
+        @Reduce("invalid")
         fun testBaseReducer(): String {
             return ""
         }
     }
 
     inner class VoidReturnReducer : BaseAnnotatedReducer<String>() {
-        @ReducerAction("invalid")
+        @Reduce("invalid")
         fun testBaseReducer(state: String, payload: String) { }
     }
 
     inner class InvalidReturnReducer : BaseAnnotatedReducer<String>() {
-        @ReducerAction("invalid")
+        @Reduce("invalid")
         fun testBaseReducer(state: String, payload: String): Int {
             return 1
         }
