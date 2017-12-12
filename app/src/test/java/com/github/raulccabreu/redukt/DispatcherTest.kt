@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch
 class DispatcherTest {
     @Test
     fun afterDispatchTooManyActionsAsync() {
-        val actionsCount = Dispatcher.MAX_ACTIONS + 1
+        val actionsCount = Dispatcher.MAX_ACTIONS - 1
         val redukt = Redukt<String>("initial")
         val changerReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
@@ -26,7 +26,7 @@ class DispatcherTest {
             redukt.dispatch(Action("action", "new state $pos"))
         }
         signal.await()
-        assertEquals("new state ${Dispatcher.MAX_ACTIONS}", redukt.state)
+        assertEquals("new state ${actionsCount - 1}", redukt.state)
         redukt.stop()
     }
 
