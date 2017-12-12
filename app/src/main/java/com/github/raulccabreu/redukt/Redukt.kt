@@ -1,13 +1,15 @@
 package com.github.raulccabreu.redukt
 
 import com.github.raulccabreu.redukt.actions.Action
+import com.github.raulccabreu.redukt.middlewares.Middleware
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
 
-class Redukt<T: Any>(state: T) {
+class Redukt<T>(state: T) {
     var state = state
         private set
     val reducers = mutableSetOf<Reducer<T>>()
+    val middlewares = mutableSetOf<Middleware<T>>()
     val listeners = mutableSetOf<StateListener<T>>()
     private val dispatcher = Dispatcher { reduce(it) }
 
@@ -29,9 +31,11 @@ class Redukt<T: Any>(state: T) {
     private fun reduce(action: Action<*>) {
         val oldState = state
         var tempState = state
+        middlewares.parallelFor { it.before(tempState, action) }
         reducers.forEach { tempState = it.reduce(tempState, action) }
         state = tempState
         listeners.parallelFor { notifyReducer(it, oldState) }
+        middlewares.parallelFor { it.after(tempState, action) }
     }
 
     private fun notifyReducer(it: StateListener<T>, oldState: T) {
