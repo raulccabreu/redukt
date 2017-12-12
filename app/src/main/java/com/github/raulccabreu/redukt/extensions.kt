@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit
 
 
 fun <T> Collection<T>.parallelFor(call: (T) -> Unit) {
+    if (this.isEmpty()) return
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         this.parallelStream().forEach { call(it) }
     } else {
