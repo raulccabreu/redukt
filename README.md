@@ -1,5 +1,29 @@
-# redukt [![Build Status](https://travis-ci.org/raulccabreu/redukt.svg?branch=master)](https://travis-ci.org/raulccabreu/redukt)
+# redukt
 Redux architecture pattern to Android writed in Kotlin
+
+
+## Basic usage
+
+```kotlin
+class CounterReducer : Reducer<Integer> {
+  override fun reduce(state: Int, action: Action<*>): Int {
+    if (action.name == "INC") return state + 1
+    if (action.name == "DEC") return state - 1
+    return state
+  }
+}
+
+val redukt = Redukt<Int>(0)
+redukt.reducers.add(CounterReducer())
+redukt.listeners.add(object: StateListener<String> {
+    override fun hasChanged(newState: Int, oldState: Int) = newState != oldState
+    override fun onChanged(state: Int) { println("count: $state") }
+})
+
+redukt.dispatch(Action("INC"))
+redukt.dispatch(Action("DEC"))
+redukt.stop()
+```
 
 #### MIT License
 
