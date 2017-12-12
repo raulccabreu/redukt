@@ -4,7 +4,7 @@ import com.github.raulccabreu.redukt.actions.Action
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
 
-class Redukt<T: Any>(state: T) {
+class Redukt<T>(state: T) {
     var state = state
         private set
     val reducers = mutableSetOf<Reducer<T>>()
