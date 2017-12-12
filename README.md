@@ -1,18 +1,36 @@
 [![Build Status](https://travis-ci.org/raulccabreu/redukt.svg?branch=master)](https://travis-ci.org/raulccabreu/redukt)
+[![](https://jitpack.io/v/raulccabreu/redukt.svg)](https://jitpack.io/#raulccabreu/redukt)
 
 # redukt
 Redux architecture pattern to Android writed in Kotlin
 
+## Add as dependency
+
+Add it in your root build.gradle at the end of repositories:
+```gradle
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+Step 2. Add the dependency
+```gradle
+dependencies {
+    compile 'com.github.raulccabreu:redukt:-SNAPSHOT'
+}
+```
 
 ## Basic usage
 
 ```kotlin
 class CounterReducer : Reducer<Integer> {
-  override fun reduce(state: Int, action: Action<*>): Int {
-    if (action.name == "INC") return state + 1
-    if (action.name == "DEC") return state - 1
-    return state
-  }
+    override fun reduce(state: Int, action: Action<*>): Int {
+        if (action.name == "INC") return state + 1
+        if (action.name == "DEC") return state - 1
+        return state
+    }
 }
 
 val redukt = Redukt<Int>(0)
