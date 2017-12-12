@@ -66,6 +66,58 @@ class BaseAnnotatedReducerTest {
         redukt.stop()
     }
 
+    @Test
+    fun invalidArgumentException() {
+        val redukt = Redukt("initial")
+        try {
+            redukt.reducers.add(InvalidArgumentReducer())
+            Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            assert(ex is IllegalArgumentException)
+        }
+    }
+
+    @Test
+    fun invalidParameterException() {
+        val redukt = Redukt("initial")
+        try {
+            redukt.reducers.add(InvalidParameterReducer())
+            Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            assert(ex is IllegalArgumentException)
+        } finally {
+            redukt.stop()
+        }
+    }
+
+    @Test
+    fun invalidReturnParameterException() {
+        val redukt = Redukt("initial")
+        try {
+            redukt.reducers.add(VoidReturnReducer())
+            Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            Assert.assertTrue(ex is IllegalArgumentException)
+        } finally {
+            redukt.stop()
+        }
+    }
+
+    @Test
+    fun invalidReturnParameter() {
+        val redukt = Redukt("initial")
+        redukt.reducers.add(InvalidReturnReducer())
+
+        redukt.dispatch(Action("valid", "new state"), false)
+
+        Assert.assertEquals("initial", redukt.state)
+        redukt.stop()
+    }
+
+
     inner class ValidReducer : BaseAnnotatedReducer<String>() {
         @ReducerAction("valid")
         fun testBaseReducer(state: String, payload: String): String {
@@ -77,6 +129,32 @@ class BaseAnnotatedReducerTest {
         @ReducerAction("valid")
         fun testBaseReducer(state: String, payload: String): String {
             return payload.toUpperCase()
+        }
+    }
+
+    inner class InvalidArgumentReducer : BaseAnnotatedReducer<String>() {
+        @ReducerAction("")
+        fun testBaseReducer(state: String, payload: String): String {
+            return payload
+        }
+    }
+
+    inner class InvalidParameterReducer : BaseAnnotatedReducer<String>() {
+        @ReducerAction("invalid")
+        fun testBaseReducer(): String {
+            return ""
+        }
+    }
+
+    inner class VoidReturnReducer : BaseAnnotatedReducer<String>() {
+        @ReducerAction("invalid")
+        fun testBaseReducer(state: String, payload: String) { }
+    }
+
+    inner class InvalidReturnReducer : BaseAnnotatedReducer<String>() {
+        @ReducerAction("invalid")
+        fun testBaseReducer(state: String, payload: String): Int {
+            return 1
         }
     }
 }

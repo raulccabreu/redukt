@@ -2,8 +2,8 @@ package com.github.raulccabreu.redukt.reducers
 
 import com.github.raulccabreu.redukt.actions.Action
 import com.github.raulccabreu.redukt.actions.ReducerAction
-import java.security.InvalidParameterException
 import java.lang.reflect.Method
+import java.security.InvalidParameterException
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -22,11 +22,11 @@ abstract class BaseAnnotatedReducer<T> : Reducer<T> {
 
                     if (it.parameterTypes.size != 2)
                         throw InvalidParameterException(
-                                "Bound method ${it.name} must accept: State and Object arguments")
+                                "The method ${it.name} must accept: State and Object arguments")
 
-                    //TODO implement return type verification
-//                    if (it.returnType is T)
-//                        throw InvalidParameterException("Bound method ${it.name} must return an instance of the State")
+                    if(it.returnType == Void.TYPE || it.returnType == Unit::class.java)
+                        throw InvalidParameterException(
+                                "The method ${it.name} must return an instance of the State")
 
                     actions.put(annotation.action, it)
                 }
@@ -34,7 +34,7 @@ abstract class BaseAnnotatedReducer<T> : Reducer<T> {
 
     override fun reduce(state: T, action: Action<*>): T {
         val method = actions[action.name]
-        method?.let { return it.invoke(this, state, action.payload) as T }
+        method?.let { return it.invoke(this, state, action.payload) as? T ?: state }
         return state
     }
 
