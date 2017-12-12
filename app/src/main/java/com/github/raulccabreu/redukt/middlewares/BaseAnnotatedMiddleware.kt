@@ -37,7 +37,7 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
     }
 
     private fun addAfterReduce(method: Method) {
-        val annotation = method.getAnnotation(BeforeAction::class.java) as BeforeAction
+        val annotation = method.getAnnotation(AfterAction::class.java) as AfterAction
 
         if (annotation.action.isBlank())
             throw IllegalArgumentException("BeforeReduce action cannot be empty")
