@@ -34,7 +34,7 @@ abstract class BaseAnnotatedReducer<T> : Reducer<T> {
 
     override fun reduce(state: T, action: Action<*>): T {
         val method = actions[action.name]
-        method?.let { return it.invoke(state, action.payload) as T }
+        method?.let { return it.invoke(this, state, action.payload) as T }
         return state
     }
 

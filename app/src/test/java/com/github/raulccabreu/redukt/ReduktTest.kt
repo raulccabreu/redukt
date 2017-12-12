@@ -8,7 +8,7 @@ import org.junit.Test
 class ReduktTest {
     @Test
     fun initialState() {
-        val redukt = Redukt<String>("initial")
+        val redukt = Redukt("initial")
         assertEquals("initial", redukt.state)
         assertEquals(0, redukt.reducers.size)
         redukt.stop()
@@ -43,7 +43,7 @@ class ReduktTest {
 
     @Test
     fun afterDispatchWithTwoReducers() {
-        val redukt = Redukt<String>("initial")
+        val redukt = Redukt("initial")
         val changerReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
@@ -62,7 +62,7 @@ class ReduktTest {
 
     @Test
     fun afterDispatchTooManyActions() {
-        val redukt = Redukt<String>("initial")
+        val redukt = Redukt("initial")
         val changerReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
