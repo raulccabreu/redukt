@@ -1,7 +1,7 @@
 package com.github.raulccabreu.redukt
 
 import com.github.raulccabreu.redukt.actions.Action
-import com.github.raulccabreu.redukt.actions.Reduce
+import com.github.raulccabreu.redukt.reducers.Reduce
 import com.github.raulccabreu.redukt.reducers.BaseAnnotatedReducer
 import junit.framework.Assert
 import org.junit.Test

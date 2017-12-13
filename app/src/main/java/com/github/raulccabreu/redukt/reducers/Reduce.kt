@@ -1,4 +1,4 @@
-package com.github.raulccabreu.redukt.actions
+package com.github.raulccabreu.redukt.reducers
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)

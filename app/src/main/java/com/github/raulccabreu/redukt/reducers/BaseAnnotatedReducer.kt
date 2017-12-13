@@ -1,7 +1,6 @@
 package com.github.raulccabreu.redukt.reducers
 
 import com.github.raulccabreu.redukt.actions.Action
-import com.github.raulccabreu.redukt.actions.Reduce
 import java.lang.reflect.Method
 import java.security.InvalidParameterException
 import java.util.concurrent.ConcurrentHashMap

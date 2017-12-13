@@ -1,6 +1,7 @@
 package com.github.raulccabreu.redukt
 
 import com.github.raulccabreu.redukt.actions.Action
+import com.github.raulccabreu.redukt.actions.MiddlewareAction
 import com.github.raulccabreu.redukt.middlewares.Middleware
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
@@ -29,9 +30,13 @@ class Redukt<T>(state: T) {
     }
 
     private fun reduce(action: Action<*>) {
+        middlewares.parallelFor { it.before(state, action) }
+
+        if (action is MiddlewareAction) return
+
         val oldState = state
         var tempState = state
-        middlewares.parallelFor { it.before(tempState, action) }
+
         reducers.forEach { tempState = it.reduce(tempState, action) }
         state = tempState
         listeners.parallelFor { notifyReducer(it, oldState) }
