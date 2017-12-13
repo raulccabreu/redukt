@@ -29,36 +29,45 @@ class Redukt<T>(state: T) {
         dispatcher.stop()
     }
 
-    private fun reduce(action: MiddlewareAction<*>) {
-        System.out.println("${action.name} reduce middleware")
-        middlewares.parallelFor { it.before(state, action) }
-    }
-
     private fun reduce(action: Action<*>) {
-        if (action is MiddlewareAction) {
-            reduce(action)
-            return
-        }
+
         System.out.println("${action.name} reduce")
+
+        reduceBefore(action)
+
+        if (action is MiddlewareAction) return
 
         val oldState = state
         var tempState = state
-        middlewares.parallelFor {
-            it.before(tempState, action)
-            System.out.println("${action.name} before ${it::class.java.simpleName}")
-        }
 
         reducers.forEach {
             tempState = it.reduce(tempState, action)
             System.out.println("${action.name} reducer ${it::class.java.simpleName}")
         }
+
         state = tempState
+
+        reduceListener(action, oldState)
+        reduceAfter(action)
+    }
+
+    private fun reduceBefore(action: Action<*>) {
+        middlewares.parallelFor {
+            it.before(state, action)
+            System.out.println("${action.name} before ${it::class.java.simpleName}")
+        }
+    }
+
+    private fun reduceListener(action: Action<*>, oldState: T) {
         listeners.parallelFor {
             notifyReducer(it, oldState)
             System.out.println("${action.name} listener ${it::class.java.simpleName}")
         }
+    }
+
+    private fun reduceAfter(action: Action<*>) {
         middlewares.parallelFor {
-            it.after(tempState, action)
+            it.after(state, action)
             System.out.println("${action.name} after ${it::class.java.simpleName}")
         }
     }
