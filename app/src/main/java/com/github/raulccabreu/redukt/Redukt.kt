@@ -30,6 +30,7 @@ class Redukt<T>(state: T) {
     }
 
     private fun reduce(action: MiddlewareAction<*>) {
+        System.out.println("Reduce middleware")
         middlewares.parallelFor { it.before(state, action) }
     }
 
@@ -38,13 +39,19 @@ class Redukt<T>(state: T) {
             reduce(action)
             return
         }
+        System.out.println("Reduce")
+
         val oldState = state
         var tempState = state
         middlewares.parallelFor { it.before(tempState, action) }
+        System.out.println("Befores")
         reducers.forEach { tempState = it.reduce(tempState, action) }
+        System.out.println("Reducers")
         state = tempState
         listeners.parallelFor { notifyReducer(it, oldState) }
+        System.out.println("Listeners")
         middlewares.parallelFor { it.after(tempState, action) }
+        System.out.println("Afters")
     }
 
     private fun notifyReducer(it: StateListener<T>, oldState: T) {
