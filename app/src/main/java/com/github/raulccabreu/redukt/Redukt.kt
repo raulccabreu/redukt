@@ -29,18 +29,14 @@ class Redukt<T>(state: T) {
         dispatcher.stop()
     }
 
-    private fun reduce(action: MiddlewareAction<*>) {
-        middlewares.parallelFor { it.before(state, action) }
-    }
-
     private fun reduce(action: Action<*>) {
-        if (action is MiddlewareAction) {
-            reduce(action)
-            return
-        }
+        middlewares.parallelFor { it.before(state, action) }
+
+        if (action is MiddlewareAction) return
+
         val oldState = state
         var tempState = state
-        middlewares.parallelFor { it.before(tempState, action) }
+
         reducers.forEach { tempState = it.reduce(tempState, action) }
         state = tempState
         listeners.parallelFor { notifyReducer(it, oldState) }
