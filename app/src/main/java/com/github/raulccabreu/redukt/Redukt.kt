@@ -32,6 +32,8 @@ class Redukt<T>(state: T) {
 
     private fun reduce(action: Action<*>) {
         val elapsed = measureTimeMillis {
+            val listeners = listeners.toSet() //to avoid concurrent modification exception
+            val middlewares = middlewares.toSet()
             val oldState = state
             var tempState = state
             middlewares.parallelFor { it.before(tempState, action) }
