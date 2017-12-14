@@ -35,7 +35,7 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
         val annotation = method.getAnnotation(BeforeAction::class.java) as BeforeAction
 
         verifyActionIsBlank (annotation.action)
-        verifyNumberOfMethods(method)
+        verifyNumberOfArguments(method)
 
         befores.put(annotation.action, method)
     }
@@ -44,19 +44,19 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
         val annotation = method.getAnnotation(AfterAction::class.java) as AfterAction
 
         verifyActionIsBlank (annotation.action)
-        verifyNumberOfMethods(method)
+        verifyNumberOfArguments(method)
 
         afters.put(annotation.action, method)
     }
 
     private fun addBeforeActions(method: Method) {
-        verifyNumberOfMethods(method)
+        verifyNumberOfArguments(method)
 
         interceptBefores.add(method)
     }
 
     private fun addAfterActions(method: Method) {
-        verifyNumberOfMethods(method)
+        verifyNumberOfArguments(method)
 
         interceptAfters.add(method)
     }
@@ -66,20 +66,20 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
             throw IllegalArgumentException("Action cannot be empty")
     }
 
-    private fun verifyNumberOfMethods(method: Method) {
+    private fun verifyNumberOfArguments(method: Method) {
         if (method.parameterTypes.size != 2)
             throw InvalidParameterException(
                     "The method ${method.name} must accept: State and Action")
     }
 
-    override fun before(state: T, action: Action<*>) {
+    final override fun before(state: T, action: Action<*>) {
         if (!canExecute(state)) return
 
         befores[action.name]?.invoke(this, state, action)
         interceptBefores.forEach { it.invoke(this, state, action) }
     }
 
-    override fun after(state: T, action: Action<*>) {
+    final override fun after(state: T, action: Action<*>) {
         if (!canExecute(state)) return
 
         afters[action.name]?.invoke(this, state, action)
