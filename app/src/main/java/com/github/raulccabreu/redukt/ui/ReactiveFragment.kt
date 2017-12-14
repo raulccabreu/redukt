@@ -1,10 +1,10 @@
 package com.github.raulccabreu.redukt.ui
 
-import android.support.v7.app.AppCompatActivity
+import android.support.v4.app.Fragment
 import com.github.raulccabreu.redukt.Redukt
 import com.github.raulccabreu.redukt.states.StateListener
 
-abstract class StateActivity<T> : AppCompatActivity(), StateListener<T> {
+abstract class ReactiveFragment<T> : Fragment(), StateListener<T> {
 
     protected abstract fun getRedukt(): Redukt<T>
 

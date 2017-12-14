@@ -5,33 +5,23 @@ import android.view.View
 import com.github.raulccabreu.redukt.Redukt
 import com.github.raulccabreu.redukt.states.StateListener
 
-abstract class StateView<T>(context: Context) : View(context), StateListener<T> {
+abstract class ReactiveView<T>(context: Context) : View(context), StateListener<T> {
 
     private var isRegistered = false
 
-    protected abstract fun changeStateWhenHidden(): Boolean
     protected abstract fun getRedukt(): Redukt<T>
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-
-        registerReducer()
+        registerStateListener()
     }
 
     override fun onDetachedFromWindow() {
-        unregisterReducer()
+        unregisterStateListener()
         super.onDetachedFromWindow()
     }
 
-    override fun setVisibility(visibility: Int) {
-        super.setVisibility(visibility)
-        if (visibility == View.VISIBLE && !isRegistered)
-            registerReducer()
-        else if (visibility != View.VISIBLE && !changeStateWhenHidden())
-            unregisterReducer()
-    }
-
-    private fun registerReducer() {
+    private fun registerStateListener() {
         if (isRegistered) return
 
         isRegistered = true
@@ -39,7 +29,7 @@ abstract class StateView<T>(context: Context) : View(context), StateListener<T> 
         onChanged(getRedukt().state)
     }
 
-    private fun unregisterReducer() {
+    private fun unregisterStateListener() {
         getRedukt().listeners.remove(this)
         isRegistered = false
     }
