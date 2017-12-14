@@ -9,21 +9,26 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
 
     private val befores: ConcurrentHashMap<String, Method> = ConcurrentHashMap()
     private val afters: ConcurrentHashMap<String, Method> = ConcurrentHashMap()
+    private val interceptBefores = mutableSetOf<Method>()
+    private val interceptAfters = mutableSetOf<Method>()
 
     init {
         javaClass.methods
                 .filter {
                     it.isAnnotationPresent(BeforeAction::class.java) ||
-                            it.isAnnotationPresent(AfterAction::class.java)
+                    it.isAnnotationPresent(AfterAction::class.java) ||
+                    it.isAnnotationPresent(Intercept::class.java)
                 }.forEach {
-                    when {
-                        it.isAnnotationPresent(BeforeAction::class.java) -> addBeforeReduce(it)
-                        it.isAnnotationPresent(AfterAction::class.java) -> addAfterReduce(it)
-                    }
+                    if (it.isAnnotationPresent(BeforeAction::class.java))
+                        addBeforeMiddleware(it)
+                    if (it.isAnnotationPresent(AfterAction::class.java))
+                        addAfterMiddleware(it)
+                    if (it.isAnnotationPresent(Intercept::class.java))
+                        addIntercept(it)
                 }
     }
 
-    private fun addBeforeReduce(method: Method) {
+    private fun addBeforeMiddleware(method: Method) {
         val annotation = method.getAnnotation(BeforeAction::class.java) as BeforeAction
 
         if (annotation.action.isBlank())
@@ -36,7 +41,7 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
         befores.put(annotation.action, method)
     }
 
-    private fun addAfterReduce(method: Method) {
+    private fun addAfterMiddleware(method: Method) {
         val annotation = method.getAnnotation(AfterAction::class.java) as AfterAction
 
         if (annotation.action.isBlank())
@@ -49,11 +54,29 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
         afters.put(annotation.action, method)
     }
 
+    private fun addIntercept(method: Method) {
+        val annotation = method.getAnnotation(AfterAction::class.java) as Intercept
+
+        if (method.parameterTypes.size != 2)
+            throw InvalidParameterException(
+                    "The method ${method.name} must accept: State and Action")
+
+        if (annotation.isBefore) interceptBefores.add(method) else interceptAfters
+    }
+
     override fun before(state: T, action: Action<*>) {
+        if (!canExecute(state)) return
+
         befores[action.name]?.invoke(this, state, action)
+        interceptBefores.forEach { it.invoke(this, state, action) }
     }
 
     override fun after(state: T, action: Action<*>) {
+        if (!canExecute(state)) return
+
         afters[action.name]?.invoke(this, state, action)
+        interceptAfters.forEach { it.invoke(this, state, action) }
     }
+
+    open fun canExecute(state: T) : Boolean = true
 }
