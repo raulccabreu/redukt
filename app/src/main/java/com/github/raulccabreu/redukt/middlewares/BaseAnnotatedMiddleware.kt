@@ -17,26 +17,25 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
                 .filter {
                     it.isAnnotationPresent(BeforeAction::class.java) ||
                     it.isAnnotationPresent(AfterAction::class.java) ||
-                    it.isAnnotationPresent(Intercept::class.java)
+                    it.isAnnotationPresent(BeforeActions::class.java) ||
+                    it.isAnnotationPresent(AfterActions::class.java)
                 }.forEach {
                     if (it.isAnnotationPresent(BeforeAction::class.java))
                         addBeforeMiddleware(it)
                     if (it.isAnnotationPresent(AfterAction::class.java))
                         addAfterMiddleware(it)
-                    if (it.isAnnotationPresent(Intercept::class.java))
-                        addIntercept(it)
+                    if (it.isAnnotationPresent(BeforeActions::class.java))
+                        addBeforeActions(it)
+                    if (it.isAnnotationPresent(AfterActions::class.java))
+                        addAfterActions(it)
                 }
     }
 
     private fun addBeforeMiddleware(method: Method) {
         val annotation = method.getAnnotation(BeforeAction::class.java) as BeforeAction
 
-        if (annotation.action.isBlank())
-            throw IllegalArgumentException("BeforeReduce action cannot be empty")
-
-        if (method.parameterTypes.size != 2)
-            throw InvalidParameterException(
-                    "The method ${method.name} must accept: State and Action")
+        verifyActionIsBlank (annotation.action)
+        verifyNumberOfMethods(method)
 
         befores.put(annotation.action, method)
     }
@@ -44,24 +43,33 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
     private fun addAfterMiddleware(method: Method) {
         val annotation = method.getAnnotation(AfterAction::class.java) as AfterAction
 
-        if (annotation.action.isBlank())
-            throw IllegalArgumentException("BeforeReduce action cannot be empty")
-
-        if (method.parameterTypes.size != 2)
-            throw InvalidParameterException(
-                    "The method ${method.name} must accept: State and Action")
+        verifyActionIsBlank (annotation.action)
+        verifyNumberOfMethods(method)
 
         afters.put(annotation.action, method)
     }
 
-    private fun addIntercept(method: Method) {
-        val annotation = method.getAnnotation(AfterAction::class.java) as Intercept
+    private fun addBeforeActions(method: Method) {
+        verifyNumberOfMethods(method)
 
+        interceptBefores.add(method)
+    }
+
+    private fun addAfterActions(method: Method) {
+        verifyNumberOfMethods(method)
+
+        interceptAfters.add(method)
+    }
+
+    private fun verifyActionIsBlank(action: String) {
+        if (action.isBlank())
+            throw IllegalArgumentException("Action cannot be empty")
+    }
+
+    private fun verifyNumberOfMethods(method: Method) {
         if (method.parameterTypes.size != 2)
             throw InvalidParameterException(
                     "The method ${method.name} must accept: State and Action")
-
-        if (annotation.isBefore) interceptBefores.add(method) else interceptAfters
     }
 
     override fun before(state: T, action: Action<*>) {
