@@ -13,22 +13,25 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
     private val interceptAfters = mutableSetOf<Method>()
 
     init {
-        javaClass.methods
-                .filter {
+        javaClass.methods.filter {
                     it.isAnnotationPresent(BeforeAction::class.java) ||
                     it.isAnnotationPresent(AfterAction::class.java) ||
                     it.isAnnotationPresent(BeforeActions::class.java) ||
                     it.isAnnotationPresent(AfterActions::class.java)
                 }.forEach {
-                    if (it.isAnnotationPresent(BeforeAction::class.java))
-                        addBeforeMiddleware(it)
-                    if (it.isAnnotationPresent(AfterAction::class.java))
-                        addAfterMiddleware(it)
-                    if (it.isAnnotationPresent(BeforeActions::class.java))
-                        addBeforeActions(it)
-                    if (it.isAnnotationPresent(AfterActions::class.java))
-                        addAfterActions(it)
+                    add(it)
                 }
+    }
+
+    private fun add(method: Method) {
+        if (method.isAnnotationPresent(BeforeAction::class.java))
+            addBeforeMiddleware(method)
+        if (method.isAnnotationPresent(AfterAction::class.java))
+            addAfterMiddleware(method)
+        if (method.isAnnotationPresent(BeforeActions::class.java))
+            addBeforeActions(method)
+        if (method.isAnnotationPresent(AfterActions::class.java))
+            addAfterActions(method)
     }
 
     private fun addBeforeMiddleware(method: Method) {
