@@ -1,21 +1,29 @@
 package com.github.raulccabreu.redukt
 
 import com.github.raulccabreu.redukt.actions.Action
+import com.github.raulccabreu.redukt.middlewares.DebugMiddleware
 import com.github.raulccabreu.redukt.middlewares.Middleware
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
 import kotlin.system.measureTimeMillis
 
-class Redukt<T>(state: T) {
+class Redukt<T>(state: T, debug: Boolean = false) {
     var state = state
         private set
     val reducers = mutableSetOf<Reducer<T>>()
     val middlewares = mutableSetOf<Middleware<T>>()
     val listeners = mutableSetOf<StateListener<T>>()
-    var traceActionProfile = false
+    val debug = debug
     private val dispatcher = Dispatcher { reduce(it) }
 
-    init { start() }
+    init {
+        if (debug) {
+            val debugMiddleware = DebugMiddleware<T>()
+            middlewares.add(debugMiddleware)
+            listeners.add(debugMiddleware)
+        }
+        start()
+    }
 
     fun dispatch(action: Action<*>, async: Boolean = true) {
         if (async) dispatcher.dispatch(action)
@@ -42,7 +50,7 @@ class Redukt<T>(state: T) {
             listeners.parallelFor { notifyListeners(it, oldState) }
             middlewares.parallelFor { it.after(tempState, action) }
         }
-        if (traceActionProfile) println("[Redukt] [$elapsed ms] Action ${action.name}")
+        if (debug) println("<Redukt> has spent [$elapsed ms] with [${action.name}]")
     }
 
     private fun notifyListeners(it: StateListener<T>, oldState: T) {

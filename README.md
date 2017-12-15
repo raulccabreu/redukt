@@ -19,7 +19,7 @@ allprojects {
 Step 2. Add the dependency
 ```gradle
 dependencies {
-    compile 'com.github.raulccabreu:redukt:-SNAPSHOT'
+    compile 'com.github.raulccabreu:redukt:0.1.0'
 }
 ```
 
