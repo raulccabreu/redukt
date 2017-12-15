@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/raulccabreu/redukt.svg?branch=master)](https://travis-ci.org/raulccabreu/redukt)
 [![](https://jitpack.io/v/raulccabreu/redukt.svg)](https://jitpack.io/#raulccabreu/redukt)
+[![codebeat badge](https://codebeat.co/badges/50fb8d27-6eca-424e-9bbe-6f469b95cec9)](https://codebeat.co/projects/github-com-raulccabreu-redukt-master)
 
 # redukt
 Redux architecture pattern to Android writed in Kotlin
