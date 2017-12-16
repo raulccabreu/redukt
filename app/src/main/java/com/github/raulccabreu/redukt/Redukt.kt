@@ -50,7 +50,9 @@ class Redukt<T>(state: T, debug: Boolean = false) {
             listeners.parallelFor { notifyListeners(it, oldState) }
             middlewares.parallelFor { it.after(tempState, action) }
         }
-        if (debug) println("<Redukt> has spent [$elapsed ms] with [${action.name}]")
+        if (debug) {
+            debug("<Redukt> has spent [$elapsed ms] with [${action.name}]")
+        }
     }
 
     private fun notifyListeners(it: StateListener<T>, oldState: T) {
