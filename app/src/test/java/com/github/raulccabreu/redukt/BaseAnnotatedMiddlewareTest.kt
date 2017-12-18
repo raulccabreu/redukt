@@ -2,28 +2,43 @@ package com.github.raulccabreu.redukt
 
 import com.github.raulccabreu.redukt.actions.Action
 import com.github.raulccabreu.redukt.middlewares.AfterAction
+import com.github.raulccabreu.redukt.middlewares.AfterActions
 import com.github.raulccabreu.redukt.middlewares.BaseAnnotatedMiddleware
 import com.github.raulccabreu.redukt.middlewares.BeforeAction
+import com.github.raulccabreu.redukt.middlewares.BeforeActions
 import com.github.raulccabreu.redukt.reducers.Reducer
+import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import java.security.InvalidParameterException
 import java.util.concurrent.CountDownLatch
 
 class BaseAnnotatedMiddlewareTest {
 
+    private lateinit var redukt: Redukt<String>
+
+    @Before
+    fun setup() {
+        redukt = Redukt("initial")
+    }
+
+    @After
+    fun close() {
+        redukt.stop()
+    }
+
     @Test
     fun whenUseBeforeAction() {
         var result: Pair<String, String>? = null
         val signal = CountDownLatch(1)
 
-        val beforeMiddleware = ValidMiddleware { state, actionName ->
+        val middleware = ValidMiddleware { state, actionName ->
             result = Pair(state, actionName)
             signal.countDown()
         }
 
-        val redukt = Redukt("initial")
-        redukt.middlewares.add(beforeMiddleware)
+        redukt.middlewares.add(middleware)
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -31,8 +46,6 @@ class BaseAnnotatedMiddlewareTest {
 
         Assert.assertEquals("initial", result?.first)
         Assert.assertEquals("valid", result?.second)
-
-        redukt.stop()
     }
 
     @Test
@@ -40,13 +53,12 @@ class BaseAnnotatedMiddlewareTest {
         var result: Pair<String, String>? = null
         val signal = CountDownLatch(1)
 
-        val beforeMiddleware = ValidMiddleware ( afterCallback = { state, actionName ->
+        val middleware = ValidMiddleware ( afterCallback = { state, actionName ->
             result = Pair(state, actionName)
             signal.countDown()
         })
 
-        val redukt = Redukt("initial")
-        redukt.middlewares.add(beforeMiddleware)
+        redukt.middlewares.add(middleware)
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -54,8 +66,6 @@ class BaseAnnotatedMiddlewareTest {
 
         Assert.assertEquals("initial", result?.first)
         Assert.assertEquals("valid", result?.second)
-
-        redukt.stop()
     }
 
     @Test
@@ -64,7 +74,7 @@ class BaseAnnotatedMiddlewareTest {
         var resultAfter: Pair<String, String>? = null
         val signal = CountDownLatch(2)
 
-        val beforeMiddleware = ValidMiddleware ({ state, actionName ->
+        val middleware = ValidMiddleware ({ state, actionName ->
             resultBefore = Pair(state, actionName)
             signal.countDown()
         }, { state, actionName ->
@@ -72,8 +82,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        val redukt = Redukt("initial")
-        redukt.middlewares.add(beforeMiddleware)
+        redukt.middlewares.add(middleware)
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -83,8 +92,6 @@ class BaseAnnotatedMiddlewareTest {
         Assert.assertEquals("valid", resultBefore?.second)
         Assert.assertEquals("initial", resultAfter?.first)
         Assert.assertEquals("valid", resultAfter?.second)
-
-        redukt.stop()
     }
 
     @Test
@@ -97,7 +104,7 @@ class BaseAnnotatedMiddlewareTest {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
 
-        val beforeMiddleware = ValidMiddleware ({ state, actionName ->
+        val middleware = ValidMiddleware ({ state, actionName ->
             resultBefore = Pair(state, actionName)
             signal.countDown()
         }, { state, actionName ->
@@ -105,8 +112,246 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        val redukt = Redukt("initial")
-        redukt.middlewares.add(beforeMiddleware)
+        redukt.middlewares.add(middleware)
+        redukt.reducers.add(changerReducer)
+
+        redukt.dispatch(Action("valid", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("valid", resultBefore?.second)
+        Assert.assertEquals("new state", resultAfter?.first)
+        Assert.assertEquals("valid", resultAfter?.second)
+    }
+
+    @Test
+    fun invalidBeforeActionException() {
+        try {
+            redukt.middlewares.add(InvalidBeforeAction())
+            junit.framework.Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            junit.framework.Assert.assertTrue(ex is IllegalArgumentException)
+        }
+    }
+
+    @Test
+    fun invalidBeforeActionMethodsException() {
+        try {
+            redukt.middlewares.add(InvalidBeforeActionMethods())
+            junit.framework.Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            junit.framework.Assert.assertTrue(ex is InvalidParameterException)
+        }
+    }
+
+    @Test
+    fun invalidAfterActionException() {
+        try {
+            redukt.middlewares.add(InvalidAfterAction())
+            junit.framework.Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            junit.framework.Assert.assertTrue(ex is IllegalArgumentException)
+        }
+    }
+
+    @Test
+    fun invalidAfterActionMethodsException() {
+        try {
+            redukt.middlewares.add(InvalidAfterActionMethods())
+            junit.framework.Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            junit.framework.Assert.assertTrue(ex is InvalidParameterException)
+        }
+    }
+
+    @Test
+    fun whenUseBeforeActions() {
+        var result: Pair<String, String>? = null
+        val signal = CountDownLatch(1)
+
+        val middleware = ValidMiddlewareActions { state, actionName ->
+            result = Pair(state, actionName)
+            signal.countDown()
+        }
+
+        redukt.middlewares.add(middleware)
+
+        redukt.dispatch(Action("valid", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", result?.first)
+        Assert.assertEquals("valid", result?.second)
+    }
+
+    @Test
+    fun whenUseAfterActions() {
+        var result: Pair<String, String>? = null
+        val signal = CountDownLatch(1)
+
+        val middleware = ValidMiddlewareActions ( afterCallback = { state, actionName ->
+            result = Pair(state, actionName)
+            signal.countDown()
+        })
+
+        redukt.middlewares.add(middleware)
+
+        redukt.dispatch(Action("valid", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", result?.first)
+        Assert.assertEquals("valid", result?.second)
+    }
+
+    @Test
+    fun whenUseBeforeAfterActions() {
+        var resultBefore: Pair<String, String>? = null
+        var resultAfter: Pair<String, String>? = null
+        val signal = CountDownLatch(2)
+
+        val middleware = ValidMiddlewareActions ({ state, actionName ->
+            resultBefore = Pair(state, actionName)
+            signal.countDown()
+        }, { state, actionName ->
+            resultAfter = Pair(state, actionName)
+            signal.countDown()
+        })
+
+        redukt.middlewares.add(middleware)
+
+        redukt.dispatch(Action("valid", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("valid", resultBefore?.second)
+        Assert.assertEquals("initial", resultAfter?.first)
+        Assert.assertEquals("valid", resultAfter?.second)
+    }
+
+    @Test
+    fun whenUseBeforeAfterActionsWithTwoDifferentActions() {
+        var resultBefore: Pair<String, String>? = null
+        var resultAfter: Pair<String, String>? = null
+        var signal = CountDownLatch(2)
+
+        val middleware = ValidMiddlewareActions ({ state, actionName ->
+            resultBefore = Pair(state, actionName)
+            signal.countDown()
+        }, { state, actionName ->
+            resultAfter = Pair(state, actionName)
+            signal.countDown()
+        })
+
+        redukt.middlewares.add(middleware)
+
+        redukt.dispatch(Action("valid", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("valid", resultBefore?.second)
+        Assert.assertEquals("initial", resultAfter?.first)
+        Assert.assertEquals("valid", resultAfter?.second)
+
+        signal = CountDownLatch(2)
+
+        redukt.dispatch(Action("otherAction", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("otherAction", resultBefore?.second)
+        Assert.assertEquals("initial", resultAfter?.first)
+        Assert.assertEquals("otherAction", resultAfter?.second)
+    }
+
+    @Test
+    fun whenUseBeforeAfterActionsAndChangeContent() {
+        var resultBefore: Pair<String, String>? = null
+        var resultAfter: Pair<String, String>? = null
+        val signal = CountDownLatch(2)
+
+        val reducer = object: Reducer<String> {
+            override fun reduce(state: String, action: Action<*>) = action.payload.toString()
+        }
+
+        val middleware = ValidMiddlewareActions ({ state, actionName ->
+            resultBefore = Pair(state, actionName)
+            signal.countDown()
+        }, { state, actionName ->
+            resultAfter = Pair(state, actionName)
+            signal.countDown()
+        })
+
+        redukt.middlewares.add(middleware)
+        redukt.reducers.add(reducer)
+
+        redukt.dispatch(Action("valid", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("valid", resultBefore?.second)
+        Assert.assertEquals("new state", resultAfter?.first)
+        Assert.assertEquals("valid", resultAfter?.second)
+    }
+
+    @Test
+    fun invalidAfterActionsMethodsException() {
+        try {
+            redukt.middlewares.add(InvalidAfterActionsMethods())
+            junit.framework.Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            junit.framework.Assert.assertTrue(ex is InvalidParameterException)
+        }
+    }
+
+    @Test
+    fun invalidBeforeActionsMethodsException() {
+        try {
+            redukt.middlewares.add(InvalidBeforeActionsMethods())
+            junit.framework.Assert.assertTrue(false)
+        } catch (ex: Exception) {
+            System.out.println("${ex.message}")
+            junit.framework.Assert.assertTrue(ex is InvalidParameterException)
+        }
+    }
+
+    @Test
+    fun whenInterceptAllAnnotationsInOneClass() {
+        var resultBefore: Pair<String, String>? = null
+        var resultAfter: Pair<String, String>? = null
+        var resultBefores: Pair<String, String>? = null
+        var resultAfters: Pair<String, String>? = null
+        val signal = CountDownLatch(2)
+
+        val changerReducer = object: Reducer<String> {
+            override fun reduce(state: String, action: Action<*>) = action.payload.toString()
+        }
+
+        val middleware = Middleware ({ state, actionName ->
+            resultBefore = Pair(state, actionName)
+            signal.countDown()
+        }, { state, actionName ->
+            resultAfter = Pair(state, actionName)
+            signal.countDown()
+        },{ state, actionName ->
+            resultBefores = Pair(state, actionName)
+            signal.countDown()
+        }, { state, actionName ->
+            resultAfters = Pair(state, actionName)
+            signal.countDown()
+        })
+
+        redukt.middlewares.add(middleware)
         redukt.reducers.add(changerReducer)
 
         redukt.dispatch(Action("valid", "new state"), false)
@@ -118,7 +363,10 @@ class BaseAnnotatedMiddlewareTest {
         Assert.assertEquals("new state", resultAfter?.first)
         Assert.assertEquals("valid", resultAfter?.second)
 
-        redukt.stop()
+        Assert.assertEquals("initial", resultBefores?.first)
+        Assert.assertEquals("valid", resultBefores?.second)
+        Assert.assertEquals("new state", resultAfters?.first)
+        Assert.assertEquals("valid", resultAfters?.second)
     }
 
     inner class ValidMiddleware(val beforeCallback: ((String, String) -> Unit)? = null,
@@ -137,68 +385,12 @@ class BaseAnnotatedMiddlewareTest {
 
     }
 
-    @Test
-    fun invalidBeforeActionException() {
-        val redukt = Redukt("initial")
-        try {
-            redukt.middlewares.add(InvalidBeforeAction())
-            junit.framework.Assert.assertTrue(false)
-        } catch (ex: Exception) {
-            System.out.println("${ex.message}")
-            junit.framework.Assert.assertTrue(ex is IllegalArgumentException)
-        } finally {
-            redukt.stop()
-        }
-    }
-
-    @Test
-    fun invalidBeforeMethodsException() {
-        val redukt = Redukt("initial")
-        try {
-            redukt.middlewares.add(InvalidBeforeMethods())
-            junit.framework.Assert.assertTrue(false)
-        } catch (ex: Exception) {
-            System.out.println("${ex.message}")
-            junit.framework.Assert.assertTrue(ex is InvalidParameterException)
-        } finally {
-            redukt.stop()
-        }
-    }
-
-    @Test
-    fun invalidAfterActionException() {
-        val redukt = Redukt("initial")
-        try {
-            redukt.middlewares.add(InvalidAfterAction())
-            junit.framework.Assert.assertTrue(false)
-        } catch (ex: Exception) {
-            System.out.println("${ex.message}")
-            junit.framework.Assert.assertTrue(ex is IllegalArgumentException)
-        } finally {
-            redukt.stop()
-        }
-    }
-
-    @Test
-    fun invalidAfterMethodsException() {
-        val redukt = Redukt("initial")
-        try {
-            redukt.middlewares.add(InvalidAfterMethods())
-            junit.framework.Assert.assertTrue(false)
-        } catch (ex: Exception) {
-            System.out.println("${ex.message}")
-            junit.framework.Assert.assertTrue(ex is InvalidParameterException)
-        } finally {
-            redukt.stop()
-        }
-    }
-
     inner class InvalidBeforeAction : BaseAnnotatedMiddleware<String>() {
         @BeforeAction("")
         fun beforeAction(state: String, action: Action<*>) { }
     }
 
-    inner class InvalidBeforeMethods : BaseAnnotatedMiddleware<String>() {
+    inner class InvalidBeforeActionMethods : BaseAnnotatedMiddleware<String>() {
         @BeforeAction("Invalid")
         fun beforeAction() { }
     }
@@ -208,8 +400,62 @@ class BaseAnnotatedMiddlewareTest {
         fun afterAction(state: String, action: Action<*>) { }
     }
 
-    inner class InvalidAfterMethods : BaseAnnotatedMiddleware<String>() {
+    inner class InvalidAfterActionMethods : BaseAnnotatedMiddleware<String>() {
         @AfterAction("Invalid")
         fun afterAction() { }
+    }
+
+    inner class ValidMiddlewareActions(val beforeCallback: ((String, String) -> Unit)? = null,
+                                val afterCallback: ((String, String) -> Unit)? = null) :
+            BaseAnnotatedMiddleware<String>() {
+
+        @BeforeActions
+        fun beforeActions(state: String, action: Action<*>) {
+            beforeCallback?.invoke(state, action.name)
+        }
+
+        @AfterActions
+        fun afterActions(state: String, action: Action<*>) {
+            afterCallback?.invoke(state, action.name)
+        }
+
+    }
+
+    inner class InvalidBeforeActionsMethods : BaseAnnotatedMiddleware<String>() {
+        @BeforeActions
+        fun beforeAction() { }
+    }
+
+    inner class InvalidAfterActionsMethods : BaseAnnotatedMiddleware<String>() {
+        @AfterActions
+        fun afterAction() { }
+    }
+
+    inner class Middleware(val before: ((String, String) -> Unit)? = null,
+                           val aftert: ((String, String) -> Unit)? = null,
+                           val beforeActions: ((String, String) -> Unit)? = null,
+                           val aftertActions: ((String, String) -> Unit)? = null) :
+            BaseAnnotatedMiddleware<String>() {
+
+        @BeforeAction("valid")
+        fun beforeAction(state: String, action: Action<*>) {
+            before?.invoke(state, action.name)
+        }
+
+        @AfterAction("valid")
+        fun afterAction(state: String, action: Action<*>) {
+            aftert?.invoke(state, action.name)
+        }
+
+        @BeforeActions
+        fun beforeActions(state: String, action: Action<*>) {
+            beforeActions?.invoke(state, action.name)
+        }
+
+        @AfterActions
+        fun afterActions(state: String, action: Action<*>) {
+            aftertActions?.invoke(state, action.name)
+        }
+
     }
 }
