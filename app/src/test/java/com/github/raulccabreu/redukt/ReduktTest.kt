@@ -16,7 +16,7 @@ class ReduktTest {
 
     @Test
     fun afterAddReducer() {
-        val redukt  = Redukt<String>("")
+        val redukt  = Redukt("")
         val reducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = state
         }
