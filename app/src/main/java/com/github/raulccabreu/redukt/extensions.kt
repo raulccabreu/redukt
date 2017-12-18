@@ -1,6 +1,7 @@
 package com.github.raulccabreu.redukt
 
 import android.os.Build
+import android.util.Log
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -19,4 +20,8 @@ fun <T> Collection<T>.parallelFor(call: (T) -> Unit) {
         exec.shutdown()
         exec.awaitTermination(1, TimeUnit.DAYS)
     }
+}
+
+fun debug(msg: String) {
+    Log.d("Redukt", msg)
 }
