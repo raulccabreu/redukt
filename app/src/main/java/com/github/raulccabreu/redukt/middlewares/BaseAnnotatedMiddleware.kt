@@ -25,16 +25,16 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
 
     private fun add(method: Method) {
         if (method.isAnnotationPresent(BeforeAction::class.java))
-            addBeforeMiddleware(method)
+            addBeforeAction(method)
         if (method.isAnnotationPresent(AfterAction::class.java))
-            addAfterMiddleware(method)
+            addAfterAction(method)
         if (method.isAnnotationPresent(BeforeActions::class.java))
             addBeforeActions(method)
         if (method.isAnnotationPresent(AfterActions::class.java))
             addAfterActions(method)
     }
 
-    private fun addBeforeMiddleware(method: Method) {
+    private fun addBeforeAction(method: Method) {
         val annotation = method.getAnnotation(BeforeAction::class.java) as BeforeAction
 
         verifyActionIsBlank (annotation.action)
@@ -43,7 +43,7 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
         befores.put(annotation.action, method)
     }
 
-    private fun addAfterMiddleware(method: Method) {
+    private fun addAfterAction(method: Method) {
         val annotation = method.getAnnotation(AfterAction::class.java) as AfterAction
 
         verifyActionIsBlank (annotation.action)
