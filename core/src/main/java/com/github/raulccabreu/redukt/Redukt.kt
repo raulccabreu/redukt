@@ -5,14 +5,15 @@ import com.github.raulccabreu.redukt.middlewares.DebugMiddleware
 import com.github.raulccabreu.redukt.middlewares.Middleware
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.system.measureTimeMillis
 
 class Redukt<T>(state: T, debug: Boolean = false) {
     var state = state
         private set
-    val reducers = mutableSetOf<Reducer<T>>()
-    val middlewares = mutableSetOf<Middleware<T>>()
-    val listeners = mutableSetOf<StateListener<T>>()
+    val reducers = ConcurrentLinkedQueue<Reducer<T>>()
+    val middlewares = ConcurrentLinkedQueue<Middleware<T>>()
+    val listeners = ConcurrentLinkedQueue<StateListener<T>>()
     val debug = debug
     private val dispatcher = Dispatcher { reduce(it) }
 
@@ -40,8 +41,6 @@ class Redukt<T>(state: T, debug: Boolean = false) {
 
     private fun reduce(action: Action<*>) {
         val elapsed = measureTimeMillis {
-            val listeners = listeners.toSet() //to avoid concurrent modification exception
-            val middlewares = middlewares.toSet()
             val oldState = state
             var tempState = state
             middlewares.parallelFor { it.before(tempState, action) }
