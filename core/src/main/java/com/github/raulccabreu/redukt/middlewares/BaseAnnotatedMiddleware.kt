@@ -53,15 +53,29 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
     }
 
     private fun addBeforeActions(method: Method) {
+        val annotation = method.getAnnotation(BeforeActions::class.java) as BeforeActions
+
         verifyNumberOfArguments(method)
 
-        interceptBefores.add(method)
+        if (annotation.filter.isEmpty())
+            interceptBefores.add(method)
+        else
+            annotation.filter.forEach {
+                befores.put(it, method)
+            }
     }
 
     private fun addAfterActions(method: Method) {
+        val annotation = method.getAnnotation(AfterActions::class.java) as AfterActions
+
         verifyNumberOfArguments(method)
 
-        interceptAfters.add(method)
+        if (annotation.filter.isEmpty())
+            interceptAfters.add(method)
+        else
+            annotation.filter.forEach {
+                afters.put(it, method)
+            }
     }
 
     private fun verifyActionIsBlank(action: String) {
