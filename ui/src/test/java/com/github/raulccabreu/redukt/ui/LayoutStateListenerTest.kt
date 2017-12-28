@@ -5,6 +5,7 @@ import junit.framework.Assert
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
 
 class LayoutStateListenerTest {
 
@@ -38,15 +39,21 @@ class LayoutStateListenerTest {
 
     @Test
     fun verifyIfCallOnChangedWhenRegisterListener() {
+        val signal = CountDownLatch(1)
+        var result: String? = null
         listener = object : LayoutStateListener<String> {
             override fun onChanged(state: String) {
-                Assert.assertEquals(state, redukt.state)
+                result = state
+                signal.countDown()
             }
 
             override fun getRedukt() = redukt
         }
 
         listener.registerStateListener()
+
+        signal.await()
+        Assert.assertEquals(result, redukt.state)
     }
 
     @Test
