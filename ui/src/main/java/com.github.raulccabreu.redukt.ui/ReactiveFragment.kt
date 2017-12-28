@@ -2,23 +2,18 @@ package com.github.raulccabreu.redukt.ui
 
 import android.support.v4.app.Fragment
 import com.github.raulccabreu.redukt.Redukt
-import com.github.raulccabreu.redukt.states.StateListener
 
-abstract class ReactiveFragment<T> : Fragment(), StateListener<T> {
+abstract class ReactiveFragment<T> : Fragment(), StateListenerLayout<T> {
 
     protected abstract fun getRedukt(): Redukt<T>
 
     override fun onStart() {
         super.onStart()
-
-        getRedukt().listeners.add(this)
-        onChanged(getRedukt().state)
+        start(getRedukt())
     }
 
     override fun onStop() {
-        getRedukt().listeners.remove(this)
         super.onStop()
+        stop(getRedukt())
     }
-
-    override fun hasChanged(newState: T, oldState: T): Boolean = newState != oldState
 }
