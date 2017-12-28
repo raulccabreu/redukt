@@ -6,7 +6,7 @@ import com.github.raulccabreu.redukt.states.StateListener
 
 class DebugMiddleware<T> : Middleware<T>, StateListener<T> {
     override fun before(state: T, action: Action<*>) {
-        debug("<Redukt> has start [${action.name}] with [${action.payload}]")
+        debug("<Redukt> has start [${action.name}]")
     }
 
     override fun after(state: T, action: Action<*>) {
@@ -14,7 +14,7 @@ class DebugMiddleware<T> : Middleware<T>, StateListener<T> {
     }
 
     override fun onChanged(state: T) {
-        debug("<Redukt> new state is [$state]")
+        debug("<Redukt> state was changed!")
     }
 
     override fun hasChanged(newState: T, oldState: T): Boolean {
@@ -22,7 +22,6 @@ class DebugMiddleware<T> : Middleware<T>, StateListener<T> {
             debug("<Redukt> state wasn't changed!")
             false
         } else {
-            debug("<Redukt> state was changed ...")
             true
         }
     }
