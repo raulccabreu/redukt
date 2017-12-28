@@ -236,6 +236,45 @@ class BaseAnnotatedMiddlewareTest {
     }
 
     @Test
+    fun whenUseBeforeAfterActionsWithTwoFilters() {
+        var resultBefore: Pair<String, String>? = null
+        var resultAfter: Pair<String, String>? = null
+        var signal = CountDownLatch(2)
+
+        val middleware = ValidMiddlewareActionsWithFilter ({ state, actionName ->
+            resultBefore = Pair(state, actionName)
+            signal.countDown()
+        }, { state, actionName ->
+            resultAfter = Pair(state, actionName)
+            signal.countDown()
+        })
+
+        redukt.middlewares.add(middleware)
+
+        redukt.dispatch(Action("action_a", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("action_a", resultBefore?.second)
+        Assert.assertEquals("initial", resultAfter?.first)
+        Assert.assertEquals("action_a", resultAfter?.second)
+
+        resultBefore = null
+        resultAfter = null
+        signal = CountDownLatch(2)
+
+        redukt.dispatch(Action("action_b", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("action_b", resultBefore?.second)
+        Assert.assertEquals("initial", resultAfter?.first)
+        Assert.assertEquals("action_b", resultAfter?.second)
+    }
+
+    @Test
     fun whenUseBeforeAfterActionsWithTwoDifferentActions() {
         var resultBefore: Pair<String, String>? = null
         var resultAfter: Pair<String, String>? = null
@@ -301,6 +340,50 @@ class BaseAnnotatedMiddlewareTest {
         Assert.assertEquals("valid", resultBefore?.second)
         Assert.assertEquals("new state", resultAfter?.first)
         Assert.assertEquals("valid", resultAfter?.second)
+    }
+
+    @Test
+    fun whenUseBeforeAfterActionsAndChangeContentWithTwoFilters() {
+        var resultBefore: Pair<String, String>? = null
+        var resultAfter: Pair<String, String>? = null
+        var signal = CountDownLatch(2)
+
+        val reducer = object: Reducer<String> {
+            override fun reduce(state: String, action: Action<*>) = action.payload.toString()
+        }
+
+        val middleware = ValidMiddlewareActionsWithFilter ({ state, actionName ->
+            resultBefore = Pair(state, actionName)
+            signal.countDown()
+        }, { state, actionName ->
+            resultAfter = Pair(state, actionName)
+            signal.countDown()
+        })
+
+        redukt.middlewares.add(middleware)
+        redukt.reducers.add(reducer)
+
+        redukt.dispatch(Action("action_a", "new state"), false)
+
+        signal.await()
+
+        Assert.assertEquals("initial", resultBefore?.first)
+        Assert.assertEquals("action_a", resultBefore?.second)
+        Assert.assertEquals("new state", resultAfter?.first)
+        Assert.assertEquals("action_a", resultAfter?.second)
+
+        resultBefore = null
+        resultAfter = null
+        signal = CountDownLatch(2)
+
+        redukt.dispatch(Action("action_b", "new state second"), false)
+
+        signal.await()
+
+        Assert.assertEquals("new state", resultBefore?.first)
+        Assert.assertEquals("action_b", resultBefore?.second)
+        Assert.assertEquals("new state second", resultAfter?.first)
+        Assert.assertEquals("action_b", resultAfter?.second)
     }
 
     @Test
@@ -406,7 +489,7 @@ class BaseAnnotatedMiddlewareTest {
     }
 
     inner class ValidMiddlewareActions(val beforeCallback: ((String, String) -> Unit)? = null,
-                                val afterCallback: ((String, String) -> Unit)? = null) :
+                                       val afterCallback: ((String, String) -> Unit)? = null) :
             BaseAnnotatedMiddleware<String>() {
 
         @BeforeActions
@@ -415,6 +498,22 @@ class BaseAnnotatedMiddlewareTest {
         }
 
         @AfterActions
+        fun afterActions(state: String, action: Action<*>) {
+            afterCallback?.invoke(state, action.name)
+        }
+
+    }
+
+    inner class ValidMiddlewareActionsWithFilter(val beforeCallback: ((String, String) -> Unit)? = null,
+                                       val afterCallback: ((String, String) -> Unit)? = null) :
+            BaseAnnotatedMiddleware<String>() {
+
+        @BeforeActions(["action_a", "action_b"])
+        fun beforeActions(state: String, action: Action<*>) {
+            beforeCallback?.invoke(state, action.name)
+        }
+
+        @AfterActions(["action_a", "action_b"])
         fun afterActions(state: String, action: Action<*>) {
             afterCallback?.invoke(state, action.name)
         }
