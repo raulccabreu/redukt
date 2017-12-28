@@ -14,7 +14,7 @@ class DebugMiddleware<T> : Middleware<T>, StateListener<T> {
     }
 
     override fun onChanged(state: T) {
-        debug("<Redukt> state was changed ...")
+        debug("<Redukt> state was changed!")
     }
 
     override fun hasChanged(newState: T, oldState: T): Boolean {
