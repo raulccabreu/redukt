@@ -7,12 +7,12 @@ interface StateListenerLayout<T> : StateListener<T> {
 
     fun getRedukt(): Redukt<T>
 
-    fun start() {
+    fun registerListener() {
         getRedukt().listeners.add(this)
         onChanged(getRedukt().state)
     }
 
-    fun stop() {
+    fun unregisterListener() {
         getRedukt().listeners.remove(this)
     }
 

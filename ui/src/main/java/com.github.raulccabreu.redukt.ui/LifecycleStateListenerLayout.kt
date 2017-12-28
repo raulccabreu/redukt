@@ -6,12 +6,12 @@ import android.arch.lifecycle.OnLifecycleEvent
 
 interface LifecycleStateListenerLayout<T> : StateListenerLayout<T>, LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    override fun start() {
-        super.start()
+    override fun registerListener() {
+        super.registerListener()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    override fun stop() {
-        super.stop()
+    override fun unregisterListener() {
+        super.unregisterListener()
     }
 }

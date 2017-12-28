@@ -7,11 +7,11 @@ abstract class ReactiveView<T>(context: Context) : View(context), StateListenerL
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        start()
+        registerListener()
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        stop()
+        unregisterListener()
     }
 }
