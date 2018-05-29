@@ -19,7 +19,8 @@ allprojects {
 Step 2. Add the dependency
 ```gradle
 dependencies {
-    compile 'com.github.raulccabreu:redukt:0.1.0'
+    compile 'com.github.raulccabreu.redukt:core:0.1.1'
+    compile 'com.github.raulccabreu.redukt:ui:0.1.1'
 }
 ```
 

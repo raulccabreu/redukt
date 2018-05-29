@@ -7,6 +7,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
 
+    private val beforeAction = BeforeAction::class.java
+    private val afterAction = AfterAction::class.java
+    private val beforeActions = BeforeActions::class.java
+    private val afterActions = AfterActions::class.java
+
     private val befores: ConcurrentHashMap<String, Method> = ConcurrentHashMap()
     private val afters: ConcurrentHashMap<String, Method> = ConcurrentHashMap()
     private val interceptBefores = mutableSetOf<Method>()
@@ -14,54 +19,41 @@ abstract class BaseAnnotatedMiddleware<T> : Middleware<T> {
 
     init {
         javaClass.methods.filter {
-                    it.isAnnotationPresent(BeforeAction::class.java) ||
-                    it.isAnnotationPresent(AfterAction::class.java) ||
-                    it.isAnnotationPresent(BeforeActions::class.java) ||
-                    it.isAnnotationPresent(AfterActions::class.java)
+                    it.isAnnotationPresent(beforeAction) ||
+                    it.isAnnotationPresent(afterAction) ||
+                    it.isAnnotationPresent(beforeActions) ||
+                    it.isAnnotationPresent(afterActions)
                 }.forEach {
                     add(it)
                 }
     }
 
     private fun add(method: Method) {
-        if (method.isAnnotationPresent(BeforeAction::class.java))
-            addBeforeAction(method)
-        if (method.isAnnotationPresent(AfterAction::class.java))
-            addAfterAction(method)
-        if (method.isAnnotationPresent(BeforeActions::class.java))
-            addBeforeActions(method)
-        if (method.isAnnotationPresent(AfterActions::class.java))
-            addAfterActions(method)
-    }
-
-    private fun addBeforeAction(method: Method) {
-        val annotation = method.getAnnotation(BeforeAction::class.java) as BeforeAction
-
-        verifyActionIsBlank (annotation.action)
         verifyNumberOfArguments(method)
 
-        befores.put(annotation.action, method)
+        if (method.isAnnotationPresent(beforeAction))
+            addAction(method.getAnnotation(beforeAction).action, method, befores)
+        if (method.isAnnotationPresent(afterAction))
+            addAction(method.getAnnotation(afterAction).action, method, afters)
+        if (method.isAnnotationPresent(beforeActions))
+            filtering(method.getAnnotation(beforeActions).filter, method, interceptBefores, befores)
+        if (method.isAnnotationPresent(afterActions))
+            filtering(method.getAnnotation(afterActions).filter, method, interceptAfters, afters)
     }
 
-    private fun addAfterAction(method: Method) {
-        val annotation = method.getAnnotation(AfterAction::class.java) as AfterAction
-
-        verifyActionIsBlank (annotation.action)
-        verifyNumberOfArguments(method)
-
-        afters.put(annotation.action, method)
+    private fun addAction(action: String, method: Method,
+                                methodsMap: ConcurrentHashMap<String, Method>) {
+        verifyActionIsBlank (action)
+        methodsMap.put(action, method)
     }
 
-    private fun addBeforeActions(method: Method) {
-        verifyNumberOfArguments(method)
-
-        interceptBefores.add(method)
-    }
-
-    private fun addAfterActions(method: Method) {
-        verifyNumberOfArguments(method)
-
-        interceptAfters.add(method)
+    private fun filtering(filters: Array<String>, method: Method,
+                          methods: MutableSet<Method>,
+                          mapToMethod: ConcurrentHashMap<String, Method>) {
+        if (filters.isEmpty())
+            methods.add(method)
+        else
+            filters.forEach { addAction(it, method, mapToMethod) }
     }
 
     private fun verifyActionIsBlank(action: String) {
