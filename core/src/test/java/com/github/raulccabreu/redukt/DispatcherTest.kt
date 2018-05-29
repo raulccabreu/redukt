@@ -12,7 +12,7 @@ class DispatcherTest {
     fun afterDispatchTooManyActionsAsync() {
         val actionsCount = Dispatcher.MAX_ACTIONS - 1
         val redukt = Redukt<String>("initial")
-        val changerReducer = object: Reducer<String> {
+        val changeReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
         val signal = CountDownLatch(actionsCount)
@@ -20,7 +20,7 @@ class DispatcherTest {
             override fun hasChanged(newState: String, oldState: String) = true
             override fun onChanged(state: String) { signal.countDown() }
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["chanceReducer"] = changeReducer
         redukt.listeners.add(listener)
         for(pos in 0 until actionsCount) {
             redukt.dispatch(Action("action", "new state $pos"))
@@ -34,10 +34,10 @@ class DispatcherTest {
     fun afterDispatchMoreActionsThanIsAllowed() {
         val actionsCount = Dispatcher.MAX_ACTIONS * 10
         val redukt = Redukt("initial")
-        val changerReducer = object: Reducer<String> {
+        val changeReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["changeReducer"] = changeReducer
         for(pos in 0 until actionsCount) redukt.dispatch(Action("action", ""))
         redukt.stop()
     }
@@ -47,7 +47,7 @@ class DispatcherTest {
         val listenersCount = 1001
         val signal = CountDownLatch(listenersCount)
         val redukt = Redukt("initial")
-        val changerReducer = object: Reducer<String> {
+        val changeReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
         for(pos in 0 until listenersCount) {
@@ -57,7 +57,7 @@ class DispatcherTest {
             }
             redukt.listeners.add(listener)
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["changeReducer"] = changeReducer
         redukt.dispatch(Action("action", "new state"))
         signal.await()
         assertEquals("new state", redukt.state)

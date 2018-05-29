@@ -38,7 +38,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         }
 
-        redukt.middlewares.add(middleware)
+        redukt.middlewares["middleware"] = middleware
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -58,7 +58,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
+        redukt.middlewares["middleware"] = middleware
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -82,7 +82,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
+        redukt.middlewares["middleware"] = middleware
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -100,7 +100,7 @@ class BaseAnnotatedMiddlewareTest {
         var resultAfter: Pair<String, String>? = null
         val signal = CountDownLatch(2)
 
-        val changerReducer = object: Reducer<String> {
+        val changeReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
 
@@ -112,8 +112,8 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
-        redukt.reducers.add(changerReducer)
+        redukt.middlewares["middleware"] = middleware
+        redukt.reducers["changeReducer"] = changeReducer
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -128,7 +128,7 @@ class BaseAnnotatedMiddlewareTest {
     @Test
     fun invalidBeforeActionException() {
         try {
-            redukt.middlewares.add(InvalidBeforeAction())
+            redukt.middlewares["invalidBeforeAfterAction"] = InvalidBeforeAction()
             junit.framework.Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -139,7 +139,7 @@ class BaseAnnotatedMiddlewareTest {
     @Test
     fun invalidBeforeActionMethodsException() {
         try {
-            redukt.middlewares.add(InvalidBeforeActionMethods())
+            redukt.middlewares["invalidBeforeActionMethods"] = InvalidBeforeActionMethods()
             junit.framework.Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -150,7 +150,7 @@ class BaseAnnotatedMiddlewareTest {
     @Test
     fun invalidAfterActionException() {
         try {
-            redukt.middlewares.add(InvalidAfterAction())
+            redukt.middlewares["invalidAfterAction"] = InvalidAfterAction()
             junit.framework.Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -161,7 +161,7 @@ class BaseAnnotatedMiddlewareTest {
     @Test
     fun invalidAfterActionMethodsException() {
         try {
-            redukt.middlewares.add(InvalidAfterActionMethods())
+            redukt.middlewares["invalidAfterActionMethods"] = InvalidAfterActionMethods()
             junit.framework.Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -179,7 +179,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         }
 
-        redukt.middlewares.add(middleware)
+        redukt.middlewares["middleware"] = middleware
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -199,7 +199,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
+        redukt.middlewares["middleware"] = middleware
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -223,7 +223,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
+        redukt.middlewares["middleware"] = middleware
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -288,7 +288,7 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
+        redukt.middlewares["middleware"] = middleware
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -329,8 +329,8 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
-        redukt.reducers.add(reducer)
+        redukt.middlewares["middleware"] = middleware
+        redukt.reducers["reducer"] = reducer
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -389,7 +389,7 @@ class BaseAnnotatedMiddlewareTest {
     @Test
     fun invalidAfterActionsMethodsException() {
         try {
-            redukt.middlewares.add(InvalidAfterActionsMethods())
+            redukt.middlewares["invalidAfterActionsMethods"] = InvalidAfterActionsMethods()
             junit.framework.Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -400,7 +400,7 @@ class BaseAnnotatedMiddlewareTest {
     @Test
     fun invalidBeforeActionsMethodsException() {
         try {
-            redukt.middlewares.add(InvalidBeforeActionsMethods())
+            redukt.middlewares["invalidBeforeActionsMethods"] = InvalidBeforeActionsMethods()
             junit.framework.Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -416,7 +416,7 @@ class BaseAnnotatedMiddlewareTest {
         var resultAfters: Pair<String, String>? = null
         val signal = CountDownLatch(2)
 
-        val changerReducer = object: Reducer<String> {
+        val changeReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
 
@@ -434,8 +434,8 @@ class BaseAnnotatedMiddlewareTest {
             signal.countDown()
         })
 
-        redukt.middlewares.add(middleware)
-        redukt.reducers.add(changerReducer)
+        redukt.middlewares["middleware"] = middleware
+        redukt.reducers["changeReducer"] = changeReducer
 
         redukt.dispatch(Action("valid", "new state"), false)
 

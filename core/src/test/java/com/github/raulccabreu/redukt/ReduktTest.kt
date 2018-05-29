@@ -16,13 +16,13 @@ class ReduktTest {
 
     @Test
     fun afterAddReducer() {
-        val redukt  = Redukt<String>("")
+        val redukt  = Redukt("")
         val reducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = state
         }
-        redukt.reducers.add(reducer)
+        redukt.reducers["reducer"] = reducer
         assertEquals(1, redukt.reducers.size)
-        assertEquals(reducer, redukt.reducers.first())
+        assertEquals(reducer, redukt.reducers.values.first())
         redukt.stop()
     }
 
@@ -32,7 +32,7 @@ class ReduktTest {
         val reducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        redukt.reducers.add(reducer)
+        redukt.reducers["reducer"] = reducer
         assertEquals("initial", redukt.state)
         redukt.dispatch(Action("action", "new state"), false)
         assertEquals("new state", redukt.state)
@@ -44,14 +44,14 @@ class ReduktTest {
     @Test
     fun afterDispatchWithTwoReducers() {
         val redukt = Redukt("initial")
-        val changerReducer = object: Reducer<String> {
+        val changeReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        val upcaseReducer = object: Reducer<String> {
+        val uppercaseReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = state.toUpperCase()
         }
-        redukt.reducers.add(changerReducer)
-        redukt.reducers.add(upcaseReducer)
+        redukt.reducers["changeReducer"] = changeReducer
+        redukt.reducers["uppercaseReducer"] = uppercaseReducer
         assertEquals("initial", redukt.state)
         redukt.dispatch(Action("action", "new state"), false)
         assertEquals("NEW STATE", redukt.state)
@@ -63,10 +63,10 @@ class ReduktTest {
     @Test
     fun afterDispatchTooManyActions() {
         val redukt = Redukt("initial")
-        val changerReducer = object: Reducer<String> {
+        val changeReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["changeReducer"] = changeReducer
         for(pos in 1 until 101) {
             redukt.dispatch(Action("action", "new state $pos"), false)
         }

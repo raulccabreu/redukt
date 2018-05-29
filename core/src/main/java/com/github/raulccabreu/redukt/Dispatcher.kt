@@ -24,6 +24,7 @@ class Dispatcher(val processNewAction: (Action<*>) -> Unit) {
     }
 
     fun dispatch(action: Action<*>) {
+        System.out.println("Action queue: ${actionQueue.size}")
         if (!actionQueue.offer(action))
             throw IllegalStateException("Dispatcher receive more than $MAX_ACTIONS")
     }
