@@ -1,7 +1,7 @@
 package com.github.raulccabreu.redukt
 
 import com.github.raulccabreu.redukt.actions.Action
-import com.github.raulccabreu.redukt.reducers.Reduce
+import com.github.raulccabreu.redukt.actions.Reduce
 import com.github.raulccabreu.redukt.reducers.BaseAnnotatedReducer
 import junit.framework.Assert
 import org.junit.Test
@@ -11,7 +11,7 @@ class BaseAnnotatedReducerTest {
     @Test
     fun whenUseValidBaseReducer() {
         val redukt = Redukt("initial")
-        redukt.reducers.add(ValidReducer())
+        redukt.reducers["validReducer"] = ValidReducer()
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -22,7 +22,7 @@ class BaseAnnotatedReducerTest {
     @Test
     fun whenUseValidBaseReducerExecuteTwice() {
         val redukt = Redukt("initial")
-        redukt.reducers.add(ValidReducer())
+        redukt.reducers["validReducer"] = ValidReducer()
 
         redukt.dispatch(Action("valid", "new state"), false)
         redukt.dispatch(Action("valid", "new state2"), false)
@@ -34,7 +34,7 @@ class BaseAnnotatedReducerTest {
     @Test
     fun whenUseInvalidBaseReducer() {
         val redukt = Redukt("initial")
-        redukt.reducers.add(ValidReducer())
+        redukt.reducers["validReducer"] = ValidReducer()
 
         redukt.dispatch(Action("invalid", "new state"), false)
 
@@ -45,12 +45,12 @@ class BaseAnnotatedReducerTest {
     @Test
     fun afterDispatchWithTwoReducers() {
         val redukt = Redukt("initial")
-        redukt.reducers.add(ValidReducer())
-        redukt.reducers.add(UpperCaseReducer())
+        redukt.reducers["validReducer"] = ValidReducer()
+        redukt.reducers["upperCaseReducer"] = UpperCaseReducer()
         org.junit.Assert.assertEquals("initial", redukt.state)
-        redukt.dispatch(Action("valid", "new state"), false)
+        redukt.dispatch(Action("upper", "new state"), false)
         org.junit.Assert.assertEquals("NEW STATE", redukt.state)
-        redukt.dispatch(Action("valid", "another state"), false)
+        redukt.dispatch(Action("upper", "another state"), false)
         org.junit.Assert.assertEquals("ANOTHER STATE", redukt.state)
         redukt.stop()
     }
@@ -58,7 +58,7 @@ class BaseAnnotatedReducerTest {
     @Test
     fun afterDispatchTooManyActions() {
         val redukt = Redukt("initial")
-        redukt.reducers.add(ValidReducer())
+        redukt.reducers["validReducer"] = ValidReducer()
         for(pos in 1 until 1001) {
             redukt.dispatch(Action("valid", "new state $pos"), false)
         }
@@ -70,7 +70,7 @@ class BaseAnnotatedReducerTest {
     fun invalidArgumentException() {
         val redukt = Redukt("initial")
         try {
-            redukt.reducers.add(InvalidArgumentReducer())
+            redukt.reducers["invalidArgumentReducer"] = InvalidArgumentReducer()
             Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -82,7 +82,7 @@ class BaseAnnotatedReducerTest {
     fun invalidParameterException() {
         val redukt = Redukt("initial")
         try {
-            redukt.reducers.add(InvalidParameterReducer())
+            redukt.reducers["invalidArgumentReducer"] = InvalidArgumentReducer()
             Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -96,7 +96,7 @@ class BaseAnnotatedReducerTest {
     fun invalidReturnParameterException() {
         val redukt = Redukt("initial")
         try {
-            redukt.reducers.add(VoidReturnReducer())
+            redukt.reducers["voidReturnReducer"] = VoidReturnReducer()
             Assert.assertTrue(false)
         } catch (ex: Exception) {
             System.out.println("${ex.message}")
@@ -109,7 +109,7 @@ class BaseAnnotatedReducerTest {
     @Test
     fun invalidReturnParameter() {
         val redukt = Redukt("initial")
-        redukt.reducers.add(InvalidReturnReducer())
+        redukt.reducers["invalidReturnReducer"] = InvalidReturnReducer()
 
         redukt.dispatch(Action("valid", "new state"), false)
 
@@ -126,7 +126,7 @@ class BaseAnnotatedReducerTest {
     }
 
     inner class UpperCaseReducer : BaseAnnotatedReducer<String>() {
-        @Reduce("valid")
+        @Reduce("upper")
         fun testBaseReducer(state: String, payload: String): String {
             return payload.toUpperCase()
         }
