@@ -5,24 +5,20 @@ import com.github.raulccabreu.redukt.middlewares.DebugMiddleware
 import com.github.raulccabreu.redukt.middlewares.Middleware
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.system.measureTimeMillis
 
-class Redukt<T>(state: T, debug: Boolean = false) {
+class Redukt<T>(state: T, val debug: Boolean = false) {
     var state = state
         private set
-    val reducers = ConcurrentLinkedQueue<Reducer<T>>()
-    val middlewares = ConcurrentLinkedQueue<Middleware<T>>()
+    val reducers = ConcurrentHashMap<String, Reducer<T>>()
+    val middlewares = ConcurrentHashMap<String, Middleware<T>>()
     val listeners = ConcurrentLinkedQueue<StateListener<T>>()
-    val debug = debug
     private val dispatcher = Dispatcher { reduce(it) }
 
     init {
-        if (debug) {
-            val debugMiddleware = DebugMiddleware<T>()
-            middlewares.add(debugMiddleware)
-            listeners.add(debugMiddleware)
-        }
+        addDebugMiddleware()
         start()
     }
 
@@ -43,11 +39,11 @@ class Redukt<T>(state: T, debug: Boolean = false) {
         val elapsed = measureTimeMillis {
             val oldState = state
             var tempState = state
-            middlewares.parallelFor { it.before(tempState, action) }
-            reducers.forEach { tempState = it.reduce(tempState, action) }
+            middlewares.values.parallelFor { it.before(tempState, action) }
+            reducers.values.forEach { tempState = it.reduce(tempState, action) }
             state = tempState
             listeners.parallelFor { notifyListeners(it, oldState) }
-            middlewares.parallelFor { it.after(tempState, action) }
+            middlewares.values.parallelFor { it.after(tempState, action) }
         }
         log("<Redukt> has spent [$elapsed ms] with [${action.name}]")
     }
@@ -58,5 +54,13 @@ class Redukt<T>(state: T, debug: Boolean = false) {
 
     private fun notifyListeners(it: StateListener<T>, oldState: T) {
         if (it.hasChanged(state, oldState)) it.onChanged(state)
+    }
+
+    private fun addDebugMiddleware() {
+        if (!debug) return
+
+        val debugMiddleware = DebugMiddleware<T>()
+        middlewares["com.github.raulccabreu.redukt.debugMiddleware"] = debugMiddleware
+        listeners.add(debugMiddleware)
     }
 }
