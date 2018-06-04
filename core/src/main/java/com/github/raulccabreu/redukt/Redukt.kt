@@ -5,15 +5,33 @@ import com.github.raulccabreu.redukt.middlewares.DebugMiddleware
 import com.github.raulccabreu.redukt.middlewares.Middleware
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
+import com.googlecode.concurrentlinkedhashmap.EvictionListener
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.system.measureTimeMillis
 
 class Redukt<T>(state: T, val debug: Boolean = false) {
+    private val reducerListener = EvictionListener<String, Reducer<T>> { key, _ ->
+        log("<Redukt> added reducer: $key")
+    }
+
+    private val middlewareListener = EvictionListener<String, Middleware<T>> { key, _ ->
+        log("<Redukt> added middleware: $key")
+    }
+
     var state = state
         private set
-    val reducers = ConcurrentHashMap<String, Reducer<T>>()
-    val middlewares = ConcurrentHashMap<String, Middleware<T>>()
+    val reducers = ConcurrentLinkedHashMap
+            .Builder<String, Reducer<T>>()
+            .maximumWeightedCapacity(1000)
+            .listener(reducerListener)
+            .build()
+    val middlewares = ConcurrentLinkedHashMap
+            .Builder<String, Middleware<T>>()
+            .maximumWeightedCapacity(1000)
+            .listener(middlewareListener)
+            .build()
     val listeners = ConcurrentLinkedQueue<StateListener<T>>()
     private val dispatcher = Dispatcher { reduce(it) }
 
@@ -39,11 +57,11 @@ class Redukt<T>(state: T, val debug: Boolean = false) {
         val elapsed = measureTimeMillis {
             val oldState = state
             var tempState = state
-            middlewares.values.parallelFor { it.before(tempState, action) }
-            reducers.values.forEach { tempState = it.reduce(tempState, action) }
+            middlewares.ascendingMap().values.parallelFor { it.before(tempState, action) }
+            reducers.ascendingMap().values.forEach { tempState = it.reduce(tempState, action) }
             state = tempState
             listeners.parallelFor { notifyListeners(it, oldState) }
-            middlewares.values.parallelFor { it.after(tempState, action) }
+            middlewares.ascendingMap().values.parallelFor { it.after(tempState, action) }
         }
         log("<Redukt> has spent [$elapsed ms] with [${action.name}]")
     }

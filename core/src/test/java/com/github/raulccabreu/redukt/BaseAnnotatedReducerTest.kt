@@ -48,9 +48,9 @@ class BaseAnnotatedReducerTest {
         redukt.reducers["validReducer"] = ValidReducer()
         redukt.reducers["upperReducer"] = UpperCaseReducer()
         org.junit.Assert.assertEquals("initial", redukt.state)
-        redukt.dispatch(Action("upper", "new state"), false)
+        redukt.dispatch(Action("valid", "new state"), false)
         org.junit.Assert.assertEquals("NEW STATE", redukt.state)
-        redukt.dispatch(Action("upper", "another state"), false)
+        redukt.dispatch(Action("valid", "another state"), false)
         org.junit.Assert.assertEquals("ANOTHER STATE", redukt.state)
         redukt.stop()
     }
@@ -126,7 +126,7 @@ class BaseAnnotatedReducerTest {
     }
 
     inner class UpperCaseReducer : BaseAnnotatedReducer<String>() {
-        @Reduce("upper")
+        @Reduce("valid")
         fun testBaseReducer(state: String, payload: String): String {
             return payload.toUpperCase()
         }

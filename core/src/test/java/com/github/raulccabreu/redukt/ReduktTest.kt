@@ -45,25 +45,17 @@ class ReduktTest {
     fun afterDispatchWithTwoReducers() {
         val redukt = Redukt("initial")
         val changerReducer = object: Reducer<String> {
-            override fun reduce(state: String, action: Action<*>): String {
-                return if(action.name == "upper") {
-                    state
-                } else {
-                    action.payload.toString()
-                }
-            }
+            override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
         val upperCaseReducer = object: Reducer<String> {
-            override fun reduce(state: String, action: Action<*>): String {
-                return (action.payload as String).toUpperCase()
-            }
+            override fun reduce(state: String, action: Action<*>) = state.toUpperCase()
         }
         redukt.reducers["changerReducer"] = changerReducer
         redukt.reducers["upperCaseReducer"] = upperCaseReducer
         assertEquals("initial", redukt.state)
-        redukt.dispatch(Action("upper", "new state"), false)
+        redukt.dispatch(Action("action", "new state"), false)
         assertEquals("NEW STATE", redukt.state)
-        redukt.dispatch(Action("upper", "another state"), false)
+        redukt.dispatch(Action("action", "another state"), false)
         assertEquals("ANOTHER STATE", redukt.state)
         redukt.stop()
     }
