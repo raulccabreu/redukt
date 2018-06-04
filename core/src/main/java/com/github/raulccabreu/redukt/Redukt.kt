@@ -5,33 +5,15 @@ import com.github.raulccabreu.redukt.middlewares.DebugMiddleware
 import com.github.raulccabreu.redukt.middlewares.Middleware
 import com.github.raulccabreu.redukt.reducers.Reducer
 import com.github.raulccabreu.redukt.states.StateListener
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
-import com.googlecode.concurrentlinkedhashmap.EvictionListener
-import java.util.concurrent.ConcurrentHashMap
+import com.github.raulccabreu.redukt.utils.createLinkedMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.system.measureTimeMillis
 
 class Redukt<T>(state: T, val debug: Boolean = false) {
-    private val reducerListener = EvictionListener<String, Reducer<T>> { key, _ ->
-        log("<Redukt> added reducer: $key")
-    }
-
-    private val middlewareListener = EvictionListener<String, Middleware<T>> { key, _ ->
-        log("<Redukt> added middleware: $key")
-    }
-
     var state = state
         private set
-    val reducers = ConcurrentLinkedHashMap
-            .Builder<String, Reducer<T>>()
-            .maximumWeightedCapacity(1000)
-            .listener(reducerListener)
-            .build()
-    val middlewares = ConcurrentLinkedHashMap
-            .Builder<String, Middleware<T>>()
-            .maximumWeightedCapacity(1000)
-            .listener(middlewareListener)
-            .build()
+    val reducers = createLinkedMap<Reducer<T>>()
+    val middlewares = createLinkedMap<Middleware<T>>()
     val listeners = ConcurrentLinkedQueue<StateListener<T>>()
     private val dispatcher = Dispatcher { reduce(it) }
 
