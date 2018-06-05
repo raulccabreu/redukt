@@ -7,8 +7,8 @@ env:
 android:
   components:
     - tools
-    - build-tools-26.0.2 # TODO: build gradle without build-tools
-    - android-26
+    - build-tools-27.0.3 # TODO: build gradle without build-tools
+    - android-27
     - extra-android-m2repository
 
 jdk:

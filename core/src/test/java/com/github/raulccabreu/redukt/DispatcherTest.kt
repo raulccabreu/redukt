@@ -20,7 +20,7 @@ class DispatcherTest {
             override fun hasChanged(newState: String, oldState: String) = true
             override fun onChanged(state: String) { signal.countDown() }
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["changerReducer"] = changerReducer
         redukt.listeners.add(listener)
         for(pos in 0 until actionsCount) {
             redukt.dispatch(Action("action", "new state $pos"))
@@ -37,7 +37,7 @@ class DispatcherTest {
         val changerReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["changerReducer"] = changerReducer
         for(pos in 0 until actionsCount) redukt.dispatch(Action("action", ""))
         redukt.stop()
     }
@@ -57,7 +57,7 @@ class DispatcherTest {
             }
             redukt.listeners.add(listener)
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["changerReducer"] = changerReducer
         redukt.dispatch(Action("action", "new state"))
         signal.await()
         assertEquals("new state", redukt.state)

@@ -19,8 +19,8 @@ allprojects {
 Step 2. Add the dependency
 ```gradle
 dependencies {
-    compile 'com.github.raulccabreu.redukt:core:0.1.1'
-    compile 'com.github.raulccabreu.redukt:ui:0.1.1'
+    compile 'com.github.raulccabreu.redukt:core:0.1.3'
+    compile 'com.github.raulccabreu.redukt:ui:0.1.3'
 }
 ```
 
@@ -36,7 +36,7 @@ class CounterReducer : Reducer<Integer> {
 }
 
 val redukt = Redukt<Int>(0)
-redukt.reducers.add(CounterReducer())
+redukt.reducers["counterReducer"] = CounterReducer()
 redukt.listeners.add(object: StateListener<String> {
     override fun hasChanged(newState: Int, oldState: Int) = newState != oldState
     override fun onChanged(state: Int) { println("count: $state") }

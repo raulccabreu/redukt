@@ -20,9 +20,9 @@ class ReduktTest {
         val reducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = state
         }
-        redukt.reducers.add(reducer)
+        redukt.reducers["reducer"] = reducer
         assertEquals(1, redukt.reducers.size)
-        assertEquals(reducer, redukt.reducers.first())
+        assertEquals(reducer, redukt.reducers.values.first())
         redukt.stop()
     }
 
@@ -32,7 +32,7 @@ class ReduktTest {
         val reducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        redukt.reducers.add(reducer)
+        redukt.reducers["reducer"] = reducer
         assertEquals("initial", redukt.state)
         redukt.dispatch(Action("action", "new state"), false)
         assertEquals("new state", redukt.state)
@@ -47,11 +47,11 @@ class ReduktTest {
         val changerReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        val upcaseReducer = object: Reducer<String> {
+        val upperCaseReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = state.toUpperCase()
         }
-        redukt.reducers.add(changerReducer)
-        redukt.reducers.add(upcaseReducer)
+        redukt.reducers["changerReducer"] = changerReducer
+        redukt.reducers["upperCaseReducer"] = upperCaseReducer
         assertEquals("initial", redukt.state)
         redukt.dispatch(Action("action", "new state"), false)
         assertEquals("NEW STATE", redukt.state)
@@ -66,7 +66,7 @@ class ReduktTest {
         val changerReducer = object: Reducer<String> {
             override fun reduce(state: String, action: Action<*>) = action.payload.toString()
         }
-        redukt.reducers.add(changerReducer)
+        redukt.reducers["changerReducer"] = changerReducer
         for(pos in 1 until 101) {
             redukt.dispatch(Action("action", "new state $pos"), false)
         }
