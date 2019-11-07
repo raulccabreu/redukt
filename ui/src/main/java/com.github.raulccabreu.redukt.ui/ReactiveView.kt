@@ -2,14 +2,8 @@ package com.github.raulccabreu.redukt.ui
 
 import android.content.Context
 import android.view.View
-import com.github.raulccabreu.redukt.Redukt
-import com.github.raulccabreu.redukt.states.StateListener
 
-abstract class ReactiveView<T>(context: Context) : View(context), StateListener<T> {
-
-    private var isRegistered = false
-
-    protected abstract fun getRedukt(): Redukt<T>
+abstract class ReactiveView<T>(context: Context) : View(context), LayoutStateListener<T> {
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -17,23 +11,7 @@ abstract class ReactiveView<T>(context: Context) : View(context), StateListener<
     }
 
     override fun onDetachedFromWindow() {
-        unregisterStateListener()
         super.onDetachedFromWindow()
+        unregisterStateListener()
     }
-
-    private fun registerStateListener() {
-        if (isRegistered) return
-
-        isRegistered = true
-        getRedukt().listeners.add(this)
-        onChanged(getRedukt().state)
-    }
-
-    private fun unregisterStateListener() {
-        getRedukt().listeners.remove(this)
-        isRegistered = false
-    }
-
-    override fun hasChanged(newState: T, oldState: T): Boolean = newState != oldState
-
 }
