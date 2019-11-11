@@ -3,7 +3,7 @@
 [![codebeat badge](https://codebeat.co/badges/50fb8d27-6eca-424e-9bbe-6f469b95cec9)](https://codebeat.co/projects/github-com-raulccabreu-redukt-master)
 
 # redukt
-Redux architecture pattern to Android writed in Kotlin
+Redux architecture pattern to Android written in Kotlin
 
 ## Add as dependency
 
