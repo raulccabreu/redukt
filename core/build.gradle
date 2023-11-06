@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
 
-group='com.github.raulccabreu.redukt'
+group='com.github.oxeanbits.redukt'
 
 tasks.withType(Test) {
     testLogging {
